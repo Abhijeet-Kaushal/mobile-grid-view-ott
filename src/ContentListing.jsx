@@ -1,5 +1,7 @@
+
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
+import { throttle } from "lodash";
 
 const Container = styled.div`
   background-color: #171717;
@@ -92,51 +94,65 @@ const Input = styled.input`
 `;
 
 const ContentListing = () => {
-  const [data, setData] = useState([]);
+  const [fetchedData, setFetchedData] = useState([]); // Raw data from API
+  const [filteredData, setFilteredData] = useState([]); // Search-filtered data
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1); // Track current page
-  const [isSearchActive, setIsSearchActive] = useState(false); // For search input
-  const totalPages = 3; // We only have three pages
+  const [currentPage, setCurrentPage] = useState(1);
+  const [fetching, setFetching] = useState(false);
+  const [isSearchActive, setIsSearchActive] =useState(false);
+  const totalPages = 3;
 
   const fetchData = async (page) => {
-    if (page > totalPages) return;
+    if (fetching || page > totalPages) return;
+    setFetching(true);
 
     try {
       const response = await fetch(
         `https://test.create.diagnal.com/data/page${page}.json`
       );
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
+      if (!response.ok) throw new Error("Network response was not ok");
+
       const jsonData = await response.json();
       const contentItems = jsonData.page["content-items"].content;
 
-      if (Array.isArray(contentItems)) {
-        setData((prev) => [...prev, ...contentItems]);
-      }
+      // Append new data without filtering
+      setFetchedData((prev) => [...prev, ...contentItems]);
     } catch (error) {
       console.error("Error fetching data:", error);
+    } finally {
+      setFetching(false);
     }
   };
 
+  // Trigger API call when currentPage changes
   useEffect(() => {
-    fetchData(currentPage); // Load data from current page
+    fetchData(currentPage);
+  }, [currentPage]);
 
-    const handleScroll = () => {
+  // Throttled scroll handling for pagination for optimization
+  useEffect(() => {
+    const handleScroll = throttle(() => {
       const isBottom =
         window.innerHeight + document.documentElement.scrollTop >=
         document.documentElement.offsetHeight - window.innerHeight * 0.1;
 
       if (isBottom && currentPage < totalPages) {
-        fetchData(currentPage + 1); // Fetch next page
-        setCurrentPage((prev) => prev + 1); // Update current page
+        setCurrentPage((prev) => prev + 1);
       }
-    };
+    }, 300);
 
     window.addEventListener("scroll", handleScroll);
-
     return () => window.removeEventListener("scroll", handleScroll);
   }, [currentPage]);
+
+  // Update filteredData whenever fetchedData or searchTerm changes
+  useEffect(() => {
+    const lowercasedSearchTerm = searchTerm.toLowerCase();
+    const filtered = fetchedData.filter((item) =>
+      item.name.toLowerCase().includes(lowercasedSearchTerm)
+    );
+    setFilteredData(filtered);
+  }, [fetchedData, searchTerm]);
 
   return (
     <Container>
@@ -161,11 +177,7 @@ const ContentListing = () => {
         )}
       </HeaderContainer>
       <Grid>
-        {data
-          .filter((item) =>
-            item.name.toLowerCase().includes(searchTerm.toLowerCase())
-          )
-          .map((item, index) => (
+        {filteredData.map((item, index) => (
             <Item key={index}>
               {item["poster-image"] &&
               item["poster-image"] !== "posterthatismissing.jpg" ? (
