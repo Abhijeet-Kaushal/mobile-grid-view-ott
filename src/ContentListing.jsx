@@ -16,11 +16,21 @@ const Container = styled.div`
   }
 `;
 
-const HeaderContainer = styled.div`
+const MainHeaderContainer = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: center;
   margin-bottom: 10px;
+`;
+
+const HeaderContainer = styled.div`
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+`;
+
+const HeaderContainerSearch = styled.div`
+  display: flex;
+  align-items: center;
 `;
 
 const SearchImage = styled.img`
@@ -32,6 +42,24 @@ const SearchImage = styled.img`
 const GoBackImage = styled.img`
   width: 24px;
   height: 20px;
+  margin: 10px;
+  cursor: pointer;
+`;
+
+const FilmLabel = styled.div`
+  margin-right: auto;
+  color: #ffffff;
+`;
+
+const Input = styled.input`
+    margin-left:10px; 
+    padding:5px; 
+    border:none; 
+    border-radius:5px; 
+    outline:none; 
+    background-color:#333; 
+    color:white; 
+    width:200px;
 `;
 
 const Grid = styled.div`
@@ -56,18 +84,16 @@ const Image = styled.img`
   object-fit: cover;
 `;
 
-const FilmLabel = styled.div`
-  margin-right: 55%;
-  color: #ffffff;
-`;
-
 const Title = styled.div`
   margin: 5px;
   font-size: 12px;
-  text-align: center;
-  white-space: normal; /* text wrapping for long titles*/
-  overflow: hidden;
-  text-overflow: ellipsis;
+`;
+
+const NoResultsMessage = styled.div`
+    grid-column: span 3;
+    text-align: center; 
+    color: #ffffff;
+    margin-top: 50px;
 `;
 
 const ImageNotAvailable = styled.div`
@@ -83,23 +109,13 @@ const ImageNotAvailable = styled.div`
   font-weight: bold;
 `;
 
-const Input = styled.input`
-  margin-left: 10px;
-  padding: 5px;
-  border: none;
-  border-radius: 5px;
-  outline: none;
-  background-color: #333;
-  color: white;
-`;
-
 const ContentListing = () => {
   const [fetchedData, setFetchedData] = useState([]); // Raw data from API
   const [filteredData, setFilteredData] = useState([]); // Search-filtered data
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [fetching, setFetching] = useState(false);
-  const [isSearchActive, setIsSearchActive] =useState(false);
+  const [currentPage, setCurrentPage] = useState(1); // tracking current page
+  const [fetching, setFetching] = useState(false); 
+  const [isSearchActive, setIsSearchActive] =useState(false); // to toggle search
   const totalPages = 3;
 
   const fetchData = async (page) => {
@@ -115,7 +131,6 @@ const ContentListing = () => {
       const jsonData = await response.json();
       const contentItems = jsonData.page["content-items"].content;
 
-      // Append new data without filtering
       setFetchedData((prev) => [...prev, ...contentItems]);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -154,14 +169,23 @@ const ContentListing = () => {
     setFilteredData(filtered);
   }, [fetchedData, searchTerm]);
 
+  const handleBackButtonClick = () => {
+    setSearchTerm(""); // Reset search term
+    setIsSearchActive(false); // Close search bar
+  };
+
   return (
     <Container>
+      <MainHeaderContainer>
       <HeaderContainer>
         <GoBackImage
-          src="https://test.create.diagnal.com/images/Back.png"
-          alt="Back"
+            src="https://test.create.diagnal.com/images/Back.png"
+            alt="Back"
+            onClick={handleBackButtonClick} // Handle back button click
         />
         <FilmLabel>Romantic Comedy</FilmLabel>
+        </HeaderContainer>
+        <HeaderContainerSearch> 
         <SearchImage
           src="https://test.create.diagnal.com/images/search.png"
           alt="Search"
@@ -175,26 +199,27 @@ const ContentListing = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         )}
-      </HeaderContainer>
+      </HeaderContainerSearch>
+      </MainHeaderContainer>
       <Grid>
-        {filteredData.length > 0 ? (
-          filteredData.map((item, index) => (
-            <Item key={index}>
-              {item["poster-image"] && item["poster-image"] !== "posterthatismissing.jpg" ? (
-                <Image
-                  src={`https://test.create.diagnal.com/images/${item["poster-image"]}`}
-                  alt={item.name}
-               />
-              ) : (
-                <ImageNotAvailable>No Image Available</ImageNotAvailable>
-              )}
-                <Title>{item.name}</Title>
-            </Item>
-           ))
-          ) : (
-           <NoResultsMessage>No results found for "{searchTerm}"</NoResultsMessage>
+  {filteredData.length > 0 ? (
+    filteredData.map((item, index) => (
+      <Item key={index}>
+        {item["poster-image"] && item["poster-image"] !== "posterthatismissing.jpg" ? (
+          <Image
+            src={`https://test.create.diagnal.com/images/${item["poster-image"]}`}
+            alt={item.name}
+          />
+        ) : (
+          <ImageNotAvailable>No Image Available</ImageNotAvailable>
         )}
-      </Grid>
+        <Title>{item.name}</Title>
+      </Item>
+    ))
+  ) : (
+    <NoResultsMessage>No results found for "{searchTerm}"</NoResultsMessage>
+  )}
+</Grid>
     </Container>
   );
 };

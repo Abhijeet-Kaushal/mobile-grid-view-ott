@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/mobile-grid-view-ott/static/css/main.6f17c52c.css",
-    "main.js": "/mobile-grid-view-ott/static/js/main.9f14558f.js",
+    "main.js": "/mobile-grid-view-ott/static/js/main.e27bc48e.js",
     "index.html": "/mobile-grid-view-ott/index.html",
     "main.6f17c52c.css.map": "/mobile-grid-view-ott/static/css/main.6f17c52c.css.map",
-    "main.9f14558f.js.map": "/mobile-grid-view-ott/static/js/main.9f14558f.js.map"
+    "main.e27bc48e.js.map": "/mobile-grid-view-ott/static/js/main.e27bc48e.js.map"
   },
   "entrypoints": [
     "static/css/main.6f17c52c.css",
-    "static/js/main.9f14558f.js"
+    "static/js/main.e27bc48e.js"
   ]
 }
