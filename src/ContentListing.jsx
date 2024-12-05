@@ -177,20 +177,23 @@ const ContentListing = () => {
         )}
       </HeaderContainer>
       <Grid>
-        {filteredData.map((item, index) => (
+        {filteredData.length > 0 ? (
+          filteredData.map((item, index) => (
             <Item key={index}>
-              {item["poster-image"] &&
-              item["poster-image"] !== "posterthatismissing.jpg" ? (
+              {item["poster-image"] && item["poster-image"] !== "posterthatismissing.jpg" ? (
                 <Image
                   src={`https://test.create.diagnal.com/images/${item["poster-image"]}`}
                   alt={item.name}
-                />
+               />
               ) : (
                 <ImageNotAvailable>No Image Available</ImageNotAvailable>
               )}
-              <Title>{item.name}</Title>
+                <Title>{item.name}</Title>
             </Item>
-          ))}
+           ))
+          ) : (
+           <NoResultsMessage>No results found for "{searchTerm}"</NoResultsMessage>
+        )}
       </Grid>
     </Container>
   );
